@@ -12,8 +12,8 @@ const AllCoins = () => {
         padding: "1rem",
         display: "flex",
         flexDirection: "column",
-        alignItems: "center", // 수평 중앙 정렬
-        textAlign: "center",  // 텍스트 중앙 정렬
+        alignItems: "center",
+        textAlign: "center",
       }}
     >
       <h2>📡 실시간 업비트 원화 마켓 시세</h2>

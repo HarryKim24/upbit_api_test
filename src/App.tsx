@@ -1,13 +1,17 @@
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import AllCoins from "./components/AllCoins";
 import './App.css'
-import AllCoins from './components/AllCoins'
+import CoinDetail from "./components/CoinDetail";
 
-function App() {
-
+const App = () => {
   return (
-    <div>
-      <AllCoins />
-    </div>
-  )
-}
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<AllCoins />} />
+        <Route path="/coin/:marketId" element={<CoinDetail />} />
+      </Routes>
+    </BrowserRouter>
+  );
+};
 
-export default App
+export default App;
