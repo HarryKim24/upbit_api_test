@@ -1,10 +1,11 @@
 import './App.css'
+import AllCoins from './components/AllCoins'
 
 function App() {
 
   return (
     <div>
-      app.tsx
+      <AllCoins />
     </div>
   )
 }
