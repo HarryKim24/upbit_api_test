@@ -12,6 +12,7 @@ const CoinList = ({ markets, tickers }: Props) => {
       style={{
         display: "flex",
         flexWrap: "wrap",
+        justifyContent: "center",
         gap: "0.5rem",
         padding: 0,
         margin: 0,
