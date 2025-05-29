@@ -10,26 +10,28 @@ const CoinItem = ({ market, ticker }: Props) => {
   const [highlight, setHighlight] = useState<"rise" | "fall" | null>(null);
   const prevPrice = useRef<number | null>(null);
 
-  // 가격 변동 감지
-useEffect(() => {
-  if (!ticker) return;
-
-  const newPrice = ticker.trade_price;
-  const oldPrice = prevPrice.current;
-
-  if (oldPrice !== null && oldPrice !== newPrice) {
-    const isUp = newPrice > oldPrice;
-    setHighlight(isUp ? "rise" : "fall");
-
-    const timeout = setTimeout(() => {
-      setHighlight(null);
-    }, 200);
-    return () => clearTimeout(timeout);
-  }
-
-  prevPrice.current = newPrice;
-}, [ticker]);
-
+  const tradePrice = ticker?.trade_price;
+  
+  useEffect(() => {
+    if (tradePrice === undefined) return;
+  
+    const oldPrice = prevPrice.current;
+  
+    if (oldPrice !== null && oldPrice !== tradePrice) {
+      const isUp = tradePrice > oldPrice;
+      setHighlight(isUp ? "rise" : "fall");
+  
+      const timeout = setTimeout(() => {
+        setHighlight(null);
+      }, 200);
+  
+      prevPrice.current = tradePrice;
+  
+      return () => clearTimeout(timeout);
+    }
+  
+    prevPrice.current = tradePrice;
+  }, [tradePrice]);
 
   const isRising = ticker?.change === "RISE";
 
