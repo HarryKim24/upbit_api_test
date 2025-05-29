@@ -6,12 +6,11 @@ const CoinListSidebar = () => {
       style={{
         display: "flex",
         flexDirection: "column",
-        width: "200px",
         border: "1px solid #ddd",
         borderRadius: "6px",
         boxSizing: "border-box",
         overflow: "hidden",
-        height: "calc(100vh - 30px)",
+        height: "calc(100vh - 82px)",
       }}
     >
       <div

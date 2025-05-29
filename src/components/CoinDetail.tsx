@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import CoinChart from "./CoinChart";
 import CoinDescription from "./CoinDescription";
 import CoinHeader from "./CoinHeader";
@@ -8,34 +9,56 @@ const CoinDetail = () => {
     <div
       style={{
         display: "flex",
+        flexDirection: "column",
         height: "100vh",
-        padding: "1rem",
         boxSizing: "border-box",
       }}
     >
-      <main
+      <div
         style={{
-          flex: 1,
+          padding: "0.5rem 1rem",
+          borderBottom: "1px solid #eee",
+          backgroundColor: "#fafafa",
+        }}
+      >
+        <Link to="/" style={{ textDecoration: "none", fontSize: "1.5rem", color: "#000000" }}>
+          🏠 홈으로
+        </Link>
+      </div>
+
+      <div
+        style={{
           display: "flex",
-          flexDirection: "column",
-          gap: "1rem",
-          boxSizing: "border-box",
+          flex: 1,
           overflow: "hidden",
         }}
       >
-        <CoinHeader />
-        <CoinChart />
-        <CoinDescription />
-      </main>
+        <main
+          style={{
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            gap: "1rem",
+            padding: "1rem",
+            boxSizing: "border-box",
+            overflow: "hidden",
+          }}
+        >
+          <CoinHeader />
+          <CoinChart />
+          <CoinDescription />
+        </main>
 
-      <aside
-        style={{
-          width: "200px",
-          paddingLeft: "0.5rem",
-        }}
-      >
-        <CoinListSidebar />
-      </aside>
+        <aside
+          style={{
+            width: "300px",
+            padding: "1rem 0.5rem",
+            boxSizing: "border-box",
+          }}
+        >
+          <CoinListSidebar />
+        </aside>
+      </div>
     </div>
   );
 };
