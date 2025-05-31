@@ -11,9 +11,6 @@ const CoinHeader = ({ market, ticker, loading }: Props) => {
   const isFalling = ticker.change === "FALL";
   const changeColor = isRising ? "#e11d48" : isFalling ? "#2563eb" : "#6b7280";
 
-  console.log('changeColor', changeColor)
-  console.log("📊 ticker.change", ticker.change);
-
   if (loading) return <section>로딩 중...</section>;
   if (!market || !ticker) return <section>데이터 없음</section>;
 

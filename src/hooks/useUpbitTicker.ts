@@ -47,16 +47,19 @@ export const useUpbitTicker = (page: number) => {
 
   useEffect(() => {
     if (markets.length === 0) return;
-
+  
     const pageMarkets = markets.slice(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE);
     const codes = pageMarkets.map((m) => m.market);
     if (codes.length === 0) return;
-
-    socketRef.current?.close();
-
+  
+    if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+      socketRef.current.close();
+      socketRef.current = null;
+    }
+  
     const socket = new WebSocket("wss://api.upbit.com/websocket/v1");
     socketRef.current = socket;
-
+  
     socket.onopen = () => {
       socket.send(
         JSON.stringify([
@@ -65,24 +68,27 @@ export const useUpbitTicker = (page: number) => {
         ])
       );
     };
-
+  
     socket.onmessage = async (e) => {
       const buffer = await (e.data as Blob).arrayBuffer();
       const raw = JSON.parse(new TextDecoder().decode(buffer));
       const data: TickerItem = { ...raw, market: raw.code };
-
+  
       setTickers((prev) => ({
         ...prev,
         [data.market]: data,
       }));
     };
-
+  
     socket.onerror = (e) => {
       console.error("WebSocket error:", e);
     };
-
+  
     return () => {
-      socket.close();
+      if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+        socketRef.current.close();
+        socketRef.current = null;
+      }
     };
   }, [markets, page]);
 
