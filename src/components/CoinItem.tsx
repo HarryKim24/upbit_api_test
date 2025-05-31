@@ -33,6 +33,10 @@ const CoinItem = ({ market, ticker }: Props) => {
   }, [tradePrice]);
 
   const isRising = ticker?.change === "RISE";
+  const changeRate =
+    ticker?.change_rate !== undefined && ticker?.change !== undefined
+      ? `${ticker.change === "RISE" ? "+" : ticker.change === "FALL" ? "-" : ""}${(ticker.change_rate * 100).toFixed(2)}%`
+      : "-";
 
   return (
     <li style={{ listStyle: "none" }}>
@@ -72,38 +76,32 @@ const CoinItem = ({ market, ticker }: Props) => {
         >
           <div
             style={{
-              fontWeight: 600,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "0.3rem",
               fontSize: "0.65rem",
-              height: "1.9rem",
-              lineHeight: 1.1,
-              overflow: "hidden",
-            }}
-          >
-            <div
-              style={{
-                whiteSpace: "nowrap",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-              }}
-            >
-              {market.korean_name}
-            </div>
-            <div style={{ fontSize: "0.55rem", color: "#666" }}>
-              {market.market}
-            </div>
-          </div>
-
-          <div
-            style={{
-              color: "#999",
-              fontSize: "0.5rem",
               whiteSpace: "nowrap",
               overflow: "hidden",
               textOverflow: "ellipsis",
             }}
           >
-            {market.english_name}
+            <span style={{ fontWeight: 600 }}>{market.korean_name}</span>
+            <span style={{ fontSize: "0.55rem", color: "#666" }}>({market.market})</span>
           </div>
+
+          {market.market_event?.warning && (
+            <div
+              style={{
+                color: "#d97706",
+                fontSize: "0.75rem",
+                whiteSpace: "nowrap",
+                fontWeight: 600
+              }}
+            >
+              ⚠️ 유의 종목
+            </div>
+          )}
 
           {ticker && (
             <div
@@ -123,7 +121,7 @@ const CoinItem = ({ market, ticker }: Props) => {
                   whiteSpace: "nowrap",
                 }}
               >
-                💰 {ticker.trade_price.toLocaleString()}원
+                {ticker.trade_price.toLocaleString()}원
               </span>
               <span
                 style={{
@@ -132,20 +130,8 @@ const CoinItem = ({ market, ticker }: Props) => {
                   whiteSpace: "nowrap",
                 }}
               >
-                ({(ticker.change_rate * 100).toFixed(2)}%)
+                ({changeRate})
               </span>
-            </div>
-          )}
-
-          {market.market_event?.warning && (
-            <div
-              style={{
-                color: "#d97706",
-                fontSize: "0.55rem",
-                whiteSpace: "nowrap",
-              }}
-            >
-              ⚠️ 유의 종목
             </div>
           )}
         </div>

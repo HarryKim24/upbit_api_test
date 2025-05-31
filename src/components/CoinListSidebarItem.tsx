@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { MarketItem, TickerItem } from "../types/upbitTypes";
 import { Link } from "react-router-dom";
 
@@ -8,16 +8,43 @@ type Props = {
 };
 
 const CoinListSidebarItem = ({ market, ticker }: Props) => {
+  const [highlight, setHighlight] = useState<"rise" | "fall" | null>(null);
   const prevPrice = useRef<number | null>(null);
   const tradePrice = ticker?.trade_price;
 
   useEffect(() => {
     if (tradePrice === undefined) return;
+
+    const oldPrice = prevPrice.current;
+
+    if (oldPrice !== null && oldPrice !== tradePrice) {
+      const isUp = tradePrice > oldPrice;
+      setHighlight(isUp ? "rise" : "fall");
+
+      const timeout = setTimeout(() => {
+        setHighlight(null);
+      }, 200);
+
+      prevPrice.current = tradePrice;
+      return () => clearTimeout(timeout);
+    }
+
     prevPrice.current = tradePrice;
   }, [tradePrice]);
 
   const isRising = ticker?.change === "RISE";
-  const changeColor = isRising ? "#e11d48" : "#2563eb";
+  const isFalling = ticker?.change === "FALL";
+  const changeColor = isRising ? "#e11d48" : isFalling ? "#2563eb" : "#6b7280";
+
+  const changeRateValue =
+    ticker?.change_rate != null ? (ticker.change_rate * 100).toFixed(2) : null;
+
+  const changeRateDisplay = changeRateValue
+    ? `${isRising ? "+" : isFalling ? "-" : ""}${changeRateValue}`
+    : "-";
+
+  const borderColor =
+    highlight === "rise" ? "#e11d48" : highlight === "fall" ? "#2563eb" : "transparent";
 
   return (
     <li
@@ -25,6 +52,8 @@ const CoinListSidebarItem = ({ market, ticker }: Props) => {
         padding: "0.5rem 0.25rem",
         borderBottom: "1px solid #eee",
         fontSize: "0.8rem",
+        borderLeft: `2px solid ${borderColor}`,
+        transition: "border-color 0.3s ease",
       }}
     >
       <Link
@@ -37,7 +66,6 @@ const CoinListSidebarItem = ({ market, ticker }: Props) => {
           gap: "0.25rem",
         }}
       >
-        {/* 코인 정보 줄 + 유의 종목 우측 표시 */}
         <div
           style={{
             display: "flex",
@@ -49,7 +77,6 @@ const CoinListSidebarItem = ({ market, ticker }: Props) => {
             textOverflow: "ellipsis",
           }}
         >
-          {/* 왼쪽: 이름 + 마켓 + 영문명 */}
           <div
             style={{
               display: "flex",
@@ -60,23 +87,22 @@ const CoinListSidebarItem = ({ market, ticker }: Props) => {
             }}
           >
             <span style={{ fontWeight: 600 }}>{market.korean_name}</span>
-            <span style={{ fontWeight: 400, color: "#666" }}>
-              ({market.market})
-            </span>
-            <span style={{ fontSize: "0.7rem", color: "#999" }}>
-              {market.english_name}
-            </span>
+            <span style={{ fontWeight: 400, color: "#666" }}>({market.market})</span>
           </div>
 
-          {/* 오른쪽: 유의 종목 */}
           {market.market_event?.warning && (
-            <span style={{ fontSize: "0.7rem", color: "#d97706", flexShrink: 0 }}>
+            <span
+              style={{
+                fontSize: "0.7rem",
+                color: "#d97706",
+                flexShrink: 0,
+              }}
+            >
               ⚠️ 유의 종목
             </span>
           )}
         </div>
 
-        {/* 가격 정보 줄 */}
         {ticker && (
           <div
             style={{
@@ -88,7 +114,7 @@ const CoinListSidebarItem = ({ market, ticker }: Props) => {
             }}
           >
             <span>{tradePrice?.toLocaleString()}원</span>
-            <span>({(ticker.change_rate * 100).toFixed(2)}%)</span>
+            <span>({changeRateDisplay}%)</span>
           </div>
         )}
       </Link>

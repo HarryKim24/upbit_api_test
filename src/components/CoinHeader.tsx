@@ -7,72 +7,76 @@ type Props = {
   loading: boolean;
 };
 
-  const CoinHeader = ({ market, ticker, loading }: Props) => {
-    const [liveTicker, setLiveTicker] = useState<TickerItem>(ticker);
-    const socketRef = useRef<WebSocket | null>(null);
-  
-useEffect(() => {
-  if (!market?.market) return;
+const CoinHeader = ({ market, ticker, loading }: Props) => {
+  const [liveTicker, setLiveTicker] = useState<TickerItem>(ticker);
+  const socketRef = useRef<WebSocket | null>(null);
 
-  const currentSocket = socketRef.current;
-  if (
-    currentSocket &&
-    (currentSocket.readyState === WebSocket.OPEN ||
-    currentSocket.readyState === WebSocket.CONNECTING)
-  ) {
-    currentSocket.close();
-  }
+  useEffect(() => {
+    if (!market?.market) return;
 
-  const timeoutId = setTimeout(() => {
-    const socket = new WebSocket("wss://api.upbit.com/websocket/v1");
-    socketRef.current = socket;
+    const currentSocket = socketRef.current;
+    if (
+      currentSocket &&
+      (currentSocket.readyState === WebSocket.OPEN ||
+        currentSocket.readyState === WebSocket.CONNECTING)
+    ) {
+      currentSocket.close();
+    }
 
-    socket.onopen = () => {
-      socket.send(
-        JSON.stringify([
-          { ticket: "coin-header" },
-          { type: "ticker", codes: [market.market] },
-        ])
-      );
-    };
+    const timeoutId = setTimeout(() => {
+      const socket = new WebSocket("wss://api.upbit.com/websocket/v1");
+      socketRef.current = socket;
 
-    socket.onmessage = async (e) => {
-      try {
-        const buffer = await (e.data as Blob).arrayBuffer();
-        const raw = JSON.parse(new TextDecoder().decode(buffer));
-        if (raw.code && raw.trade_price) {
-          setLiveTicker({
-            market: raw.code,
-            trade_price: raw.trade_price,
-            change: raw.change,
-            change_rate: raw.change_rate,
-          });
+      socket.onopen = () => {
+        socket.send(
+          JSON.stringify([
+            { ticket: "coin-header" },
+            { type: "ticker", codes: [market.market] },
+          ])
+        );
+      };
+
+      socket.onmessage = async (e) => {
+        try {
+          const buffer = await (e.data as Blob).arrayBuffer();
+          const raw = JSON.parse(new TextDecoder().decode(buffer));
+          if (raw.code && raw.trade_price) {
+            setLiveTicker({
+              market: raw.code,
+              trade_price: raw.trade_price,
+              change: raw.change,
+              change_rate: raw.change_rate,
+            });
+          }
+        } catch (err) {
+          console.error("❌ JSON Parse Error:", err);
         }
-      } catch (err) {
-        console.error("❌ JSON Parse Error:", err);
-      }
+      };
+
+      socket.onerror = (e) => {
+        console.error("WebSocket error:", e);
+      };
+    }, 50);
+
+    return () => {
+      clearTimeout(timeoutId);
+      socketRef.current?.close();
+      socketRef.current = null;
     };
+  }, [market]);
 
-    socket.onerror = (e) => {
-      console.error("WebSocket error:", e);
-    };
-  }, 50);
-
-  return () => {
-    clearTimeout(timeoutId);
-    socketRef.current?.close();
-    socketRef.current = null;
-  };
-}, [market]);
-
-  
   if (loading || !market || !liveTicker) return <section>로딩 중...</section>;
 
   const isRising = liveTicker.change === "RISE";
   const isFalling = liveTicker.change === "FALL";
   const changeColor = isRising ? "#e11d48" : isFalling ? "#2563eb" : "#6b7280";
-  const changeRate = (liveTicker.change_rate * 100).toFixed(2);
-  const changeRateDisplay = isRising ? `+${changeRate}` : changeRate;
+  const changeRateValue = (liveTicker.change_rate * 100).toFixed(2);
+  const changeRateDisplay =
+    isRising
+      ? `+${changeRateValue}`
+      : isFalling
+      ? `-${changeRateValue}`
+      : `${changeRateValue}`;
 
   return (
     <section
@@ -90,21 +94,34 @@ useEffect(() => {
         lineHeight: 1.5,
       }}
     >
-      <div style={{ fontWeight: 600, fontSize: "1.1rem", marginBottom: "0.25rem" }}>
-        {market.korean_name}{" "}
-        <span style={{ fontWeight: 400, color: "#6b7280" }}>({market.market})</span>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: "0.25rem",
+          fontSize: "1.1rem",
+          fontWeight: 600,
+        }}
+      >
+        <div>
+          {market.korean_name}{" "}
+          <span style={{ fontWeight: 400, color: "#6b7280" }}>
+            ({market.market})
+          </span>
+        </div>
+        {market.market_event?.warning && (
+          <div style={{ color: "#d97706", fontSize: "1rem", fontWeight: 500 }}>
+            ⚠️ 유의 종목
+          </div>
+        )}
       </div>
 
       <div style={{ color: changeColor, fontWeight: 500 }}>
-        <span style={{ color: "#6b7280" }}>현재가</span> {liveTicker.trade_price.toLocaleString()}원 &nbsp;&nbsp;|&nbsp;&nbsp;
+        <span style={{ color: "#6b7280" }}>현재가</span>{" "}
+        {liveTicker.trade_price.toLocaleString()}원 &nbsp;&nbsp;|&nbsp;&nbsp;
         <span style={{ color: "#6b7280" }}>전일 대비</span> {changeRateDisplay}%
       </div>
-
-      {market.market_event?.warning && (
-        <div style={{ marginTop: "0.25rem", color: "#d97706", fontSize: "0.8rem" }}>
-          유의 종목으로 지정되어 있습니다
-        </div>
-      )}
     </section>
   );
 };
