@@ -4,11 +4,13 @@ import CoinDescription from "./CoinDescription";
 import CoinHeader from "./CoinHeader";
 import CoinListSidebar from "./CoinListSidebar";
 import useUpbitCoin from "../hooks/useUpbitCoin";
+import { useUpbitTicker } from "../hooks/useUpbitTicker";
 
 const CoinDetail = () => {
 
   const { marketId } = useParams<{ marketId: string }>();
   const { market, ticker, loading } = useUpbitCoin(marketId || "");
+  const { currentPageMarkets, tickers } = useUpbitTicker(0);
 
   return (
     <div
@@ -63,7 +65,11 @@ const CoinDetail = () => {
             boxSizing: "border-box",
           }}
         >
-          <CoinListSidebar />
+          {loading ? (
+            <p>시세 불러오는 중...</p>
+          ) : (
+            <CoinListSidebar markets={currentPageMarkets} tickers={tickers} />
+          )}
         </aside>
       </div>
     </div>

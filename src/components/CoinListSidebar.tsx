@@ -1,5 +1,12 @@
-const CoinListSidebar = () => {
-  const dummyCoins = Array.from({ length: 150 }, (_, i) => `COIN-${i + 1}`);
+import type { MarketItem, TickerItem } from "../types/upbitTypes";
+import CoinListSidebarItem from "./CoinListSidebarItem";
+
+type Props = {
+  markets: MarketItem[];
+  tickers: Record<string, TickerItem>;
+};
+
+const CoinListSidebar = ({ markets, tickers }: Props) => {
 
   return (
     <div
@@ -38,10 +45,8 @@ const CoinListSidebar = () => {
             margin: 0,
           }}
         >
-          {dummyCoins.map((coin, idx) => (
-            <li key={idx} style={{ padding: "0.25rem 0" }}>
-              • {coin}
-            </li>
+          {markets.map((m) => (
+            <CoinListSidebarItem key={m.market} market={m} ticker={tickers[m.market]} />
           ))}
         </ul>
       </div>
