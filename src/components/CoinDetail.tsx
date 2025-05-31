@@ -1,10 +1,15 @@
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import CoinChart from "./CoinChart";
 import CoinDescription from "./CoinDescription";
 import CoinHeader from "./CoinHeader";
 import CoinListSidebar from "./CoinListSidebar";
+import useUpbitCoin from "../hooks/useUpbitCoin";
 
 const CoinDetail = () => {
+
+  const { marketId } = useParams<{ marketId: string }>();
+  const { market, ticker, loading } = useUpbitCoin(marketId || "");
+
   return (
     <div
       style={{
@@ -44,7 +49,9 @@ const CoinDetail = () => {
             overflow: "hidden",
           }}
         >
-          <CoinHeader />
+          {!loading && market && ticker && (
+            <CoinHeader market={market} ticker={ticker} loading={loading} />
+          )}
           <CoinChart />
           <CoinDescription />
         </main>

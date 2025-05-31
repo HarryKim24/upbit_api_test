@@ -17,6 +17,6 @@ export interface MarketItem {
 export interface TickerItem {
   market: string;
   trade_price: number;
-  change: "RISE" | "FAIL" | "EVEN";
+  change: "RISE" | "FALL" | "EVEN";
   change_rate: number;
 }
