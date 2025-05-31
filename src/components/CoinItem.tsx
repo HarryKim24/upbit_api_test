@@ -61,7 +61,7 @@ const CoinItem = ({ market, ticker }: Props) => {
             fontSize: "0.65rem",
             boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
             width: "160px",
-            height: "80px",
+            height: "70px",
             padding: "0.4rem",
             display: "flex",
             flexDirection: "column",
