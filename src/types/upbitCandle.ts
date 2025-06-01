@@ -1,4 +1,3 @@
-// types/upbitCandle.ts
 export interface upbitCandle {
   market: string;
   candle_date_time_utc: string;
