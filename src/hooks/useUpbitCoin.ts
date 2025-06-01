@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { getMarketList, getTickerInfo } from "../services/upbitApi";
+import { getMarketList, getTickerInfo } from "../api/upbitApi";
 import type { MarketItem, TickerItem } from "../types/upbitTypes";
 
 const useUpbitCoin = (marketCode: string) => {

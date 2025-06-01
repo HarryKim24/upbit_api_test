@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { MarketItem, TickerItem } from "../types/upbitTypes";
-import { getMarketList, getTickerInfo } from "../services/upbitApi";
+import { getMarketList, getTickerInfo } from "../api/upbitApi";
 
 const ITEMS_PER_PAGE = 100;
 
