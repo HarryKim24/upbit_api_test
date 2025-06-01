@@ -51,9 +51,11 @@ const CoinDetail = () => {
           }}
         >
           {!loading && market && ticker && (
-            <CoinHeader market={market} ticker={ticker} loading={loading} />
+            <>
+              <CoinHeader market={market} ticker={ticker} loading={loading} />
+              <CoinChart market={market.market} candleType="days" count={200} />
+            </>
           )}
-          <CoinChart />
         </main>
 
         <aside
