@@ -2,7 +2,7 @@ const CoinChart = () => {
   return (
     <section
       style={{
-        height: "460px",
+        height: "800px",
         border: "1px solid #ddd",
         borderRadius: "6px",
         padding: "1rem",

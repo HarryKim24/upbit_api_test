@@ -1,6 +1,5 @@
 import { Link, useParams } from "react-router-dom";
 import CoinChart from "./CoinChart";
-import CoinDescription from "./CoinDescription";
 import CoinHeader from "./CoinHeader";
 import CoinListSidebar from "./CoinListSidebar";
 import useUpbitCoin from "../hooks/useUpbitCoin";
@@ -55,7 +54,6 @@ const CoinDetail = () => {
             <CoinHeader market={market} ticker={ticker} loading={loading} />
           )}
           <CoinChart />
-          <CoinDescription />
         </main>
 
         <aside
