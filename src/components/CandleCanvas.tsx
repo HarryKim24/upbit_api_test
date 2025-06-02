@@ -12,6 +12,7 @@ const CandleCanvas = ({ candles, candleType }: Props) => {
 
   useEffect(() => {
     if (!candles.length || !ref.current) return;
+    console.log("✅ 불러온 캔들 수:", candles.length);
 
     const svg = d3.select(ref.current);
     svg.selectAll("*").remove();

@@ -1,15 +1,14 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import type { CandleType, NormalizedCandle } from "../types/upbitCandle";
-import { fetchNormalizedCandles } from "../servides/candleService";
 import { useTradeTicker } from "../hooks/useTradeTicker";
 import CandleCanvas from "./CandleCanvas";
 import CandleControls from "./CandleControls";
+import { fetchNormalizedCandles } from "../servides/candleService";
 
 const CoinChart = ({
   market,
-  candleType = "seconds",
+  candleType = "days",
   unit: defaultUnit = 1,
-  count = 100,
 }: {
   market: string;
   candleType?: CandleType;
@@ -21,8 +20,8 @@ const CoinChart = ({
   const [unit, setUnit] = useState<number>(defaultUnit);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
   const latestCandlesRef = useRef<NormalizedCandle[]>([]);
+
   useEffect(() => {
     latestCandlesRef.current = candles;
   }, [candles]);
@@ -35,19 +34,19 @@ const CoinChart = ({
           market,
           candleType: selectedType,
           unit: selectedType === "minutes" ? unit : undefined,
-          count,
+          count: 9999,
         });
         setCandles(data);
       } catch (err) {
         console.error(err);
-        setError("❌ 데이터 로딩 오류");
+        setError("❌ 전체 데이터 로딩 오류");
       } finally {
         setLoading(false);
       }
     };
-
+  
     load();
-  }, [market, selectedType, unit, count]);
+  }, [market, selectedType, unit]);
 
   const handleTrade = useCallback(
     ({ price, volume, timestamp }: { price: number; volume: number; timestamp: number }) => {
