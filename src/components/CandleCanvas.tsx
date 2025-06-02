@@ -13,22 +13,17 @@ const CandleCanvas = ({ candles, candleType }: Props) => {
   useEffect(() => {
     if (!candles.length || !ref.current) return;
 
-    // ✅ 날짜 오름차순 정렬 (과거 → 현재)
     const sortedCandles = [...candles].sort(
       (a, b) => a.date.getTime() - b.date.getTime()
     );
 
-    // ✅ 가장 최신 날짜 로그 확인
-    console.log("📅 최신 날짜:", sortedCandles[sortedCandles.length - 1].date.toISOString());
-
     const svg = d3.select(ref.current);
-    svg.selectAll("*").remove(); // 초기화
+    svg.selectAll("*").remove();
 
     const width = 800;
     const height = 600;
     const margin = { top: 20, right: 50, bottom: 30, left: 60 };
 
-    // 시간 포맷
     const timeFormatMap: Record<CandleType, string> = {
       seconds: "%H:%M:%S",
       minutes: "%H:%M",
@@ -39,7 +34,6 @@ const CandleCanvas = ({ candles, candleType }: Props) => {
     };
     const timeFormatter = d3.timeFormat(timeFormatMap[candleType]);
 
-    // ✅ X축 - 정렬된 배열 기반 도메인
     const x = d3
       .scaleBand()
       .domain(sortedCandles.map((d) => d.date.toISOString()))
@@ -48,7 +42,6 @@ const CandleCanvas = ({ candles, candleType }: Props) => {
 
     const candleWidth = x.bandwidth();
 
-    // ✅ Y축 - domain(min → max), range(bottom → top)
     const minPrice = d3.min(sortedCandles, (d) => d.low)!;
     const maxPrice = d3.max(sortedCandles, (d) => d.high)!;
 
@@ -58,7 +51,6 @@ const CandleCanvas = ({ candles, candleType }: Props) => {
       .nice()
       .range([height - margin.bottom, margin.top]);
 
-    // X축 그리기
     svg
       .append("g")
       .attr("transform", `translate(0,${height - margin.bottom})`)
@@ -74,13 +66,11 @@ const CandleCanvas = ({ candles, candleType }: Props) => {
       .attr("transform", "rotate(-40)")
       .style("text-anchor", "end");
 
-    // Y축 그리기
     svg
       .append("g")
       .attr("transform", `translate(${margin.left},0)`)
       .call(d3.axisLeft(y));
 
-    // 캔들 그리기
     svg
       .append("g")
       .selectAll("g")
@@ -94,7 +84,6 @@ const CandleCanvas = ({ candles, candleType }: Props) => {
         const openY = y(d.open);
         const closeY = y(d.close);
 
-        // Wick
         g.append("line")
           .attr("x1", candleWidth / 2)
           .attr("x2", candleWidth / 2)
@@ -103,12 +92,11 @@ const CandleCanvas = ({ candles, candleType }: Props) => {
           .attr("stroke", color)
           .attr("stroke-width", 1);
 
-        // Body
         g.append("rect")
           .attr("x", 0)
           .attr("width", candleWidth)
-          .attr("y", Math.min(openY, closeY)) // 위쪽에서 시작
-          .attr("height", Math.max(1, Math.abs(closeY - openY))) // 아래로 내려감
+          .attr("y", Math.min(openY, closeY))
+          .attr("height", Math.max(1, Math.abs(closeY - openY)))
           .attr("fill", color);
       });
   }, [candles, candleType]);

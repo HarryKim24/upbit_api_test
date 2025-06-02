@@ -22,7 +22,6 @@ const CoinChart = ({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // ✅ 항상 최신 candles 유지
   const latestCandlesRef = useRef<NormalizedCandle[]>([]);
   useEffect(() => {
     latestCandlesRef.current = candles;
@@ -60,7 +59,6 @@ const CoinChart = ({
         const tradeTime = timestamp;
         const lastTime = last.date.getTime();
 
-        // ✅ 과거 트레이드 무시
         if (tradeTime < lastTime) return prev;
 
         const isNew = (() => {
