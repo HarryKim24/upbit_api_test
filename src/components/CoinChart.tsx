@@ -44,7 +44,7 @@ const CoinChart = ({
         setLoading(false);
       }
     };
-  
+
     load();
   }, [market, selectedType, unit]);
 
@@ -107,10 +107,7 @@ const CoinChart = ({
 
   useTradeTicker({ market, onTrade: handleTrade });
 
-  if (loading) return <div>📊 로딩 중...</div>;
   if (error) return <div>{error}</div>;
-
-  const visible = candles;
 
   return (
     <section
@@ -125,14 +122,16 @@ const CoinChart = ({
       }}
     >
       <h2 style={{ fontSize: "1rem", marginBottom: "0.5rem" }}>차트</h2>
+
       <CandleControls
         selectedType={selectedType}
         unit={unit}
         onTypeChange={setSelectedType}
         onUnitChange={setUnit}
       />
-      <div style={{ flex: 1, minHeight: 0 }}>
-        <CandleCanvas candles={visible} candleType={selectedType} />
+
+      <div style={{ flex: 1, minHeight: 0, position: "relative" }}>
+        <CandleCanvas candles={candles} candleType={selectedType} loading={loading} />
       </div>
     </section>
   );
