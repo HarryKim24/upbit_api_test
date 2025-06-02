@@ -13,16 +13,15 @@ const CandleCanvas = ({ candles, candleType }: Props) => {
   useEffect(() => {
     if (!candles.length || !ref.current) return;
 
-    const sortedCandles = [...candles].sort(
-      (a, b) => a.date.getTime() - b.date.getTime()
-    );
-
     const svg = d3.select(ref.current);
     svg.selectAll("*").remove();
 
-    const width = 800;
-    const height = 600;
-    const margin = { top: 20, right: 50, bottom: 30, left: 60 };
+    const { width, height } = ref.current.getBoundingClientRect();
+    const margin = { top: 10, right: 90, bottom: 50, left: 10 };
+
+    const sortedCandles = [...candles].sort(
+      (a, b) => a.date.getTime() - b.date.getTime()
+    );
 
     const timeFormatMap: Record<CandleType, string> = {
       seconds: "%H:%M:%S",
@@ -34,20 +33,33 @@ const CandleCanvas = ({ candles, candleType }: Props) => {
     };
     const timeFormatter = d3.timeFormat(timeFormatMap[candleType]);
 
+    const dates = sortedCandles.map((d) => d.date);
+    const firstDate = dates[0];
+    const lastDate = dates[dates.length - 1];
+    const timeGap =
+      dates.length > 1
+        ? dates[1].getTime() - dates[0].getTime()
+        : 1000 * 60;
+
     const x = d3
-      .scaleBand()
-      .domain(sortedCandles.map((d) => d.date.toISOString()))
-      .range([margin.left, width - margin.right])
-      .padding(0.2);
+      .scaleTime()
+      .domain([
+        new Date(firstDate.getTime() - timeGap * 0.5),
+        new Date(lastDate.getTime() + timeGap * 0.5),
+      ])
+      .range([margin.left, width - margin.right]);
 
-    const candleWidth = x.bandwidth();
-
-    const minPrice = d3.min(sortedCandles, (d) => d.low)!;
-    const maxPrice = d3.max(sortedCandles, (d) => d.high)!;
+    const candleWidth =
+      dates.length > 1
+        ? Math.max(3, (x(dates[1])! - x(dates[0])!) * 0.7)
+        : 5;
 
     const y = d3
       .scaleLinear()
-      .domain([minPrice, maxPrice])
+      .domain([
+        d3.min(sortedCandles, (d) => d.low)!,
+        d3.max(sortedCandles, (d) => d.high)!,
+      ])
       .nice()
       .range([height - margin.bottom, margin.top]);
 
@@ -57,43 +69,61 @@ const CandleCanvas = ({ candles, candleType }: Props) => {
       .call(
         d3
           .axisBottom(x)
-          .tickValues(
-            x.domain().filter((_, i) => i % Math.ceil(sortedCandles.length / 10) === 0)
-          )
-          .tickFormat((d) => timeFormatter(new Date(d)))
+          .ticks(10)
+          .tickFormat((d) => timeFormatter(d as Date))
       )
       .selectAll("text")
       .attr("transform", "rotate(-40)")
-      .style("text-anchor", "end");
+      .attr("dy", "1em")
+      .style("text-anchor", "end")
+      .style("font-size", "12px")
+      .style("fill", "#ccc");
 
     svg
       .append("g")
-      .attr("transform", `translate(${margin.left},0)`)
-      .call(d3.axisLeft(y));
+      .attr("transform", `translate(${width - margin.right}, 0)`)
+      .call(
+        d3.axisRight(y)
+          .ticks(10)
+          .tickSize(-width + margin.left + margin.right)
+          .tickFormat(d3.format(","))
+      )
+      .call((g) => {
+        g.selectAll(".tick line")
+          .attr("stroke", "#444")
+          .attr("stroke-dasharray", "2,2");
+
+        g.selectAll(".tick text")
+          .attr("dx", "0.5em")
+          .attr("fill", "#ccc")
+          .style("font-size", "12px");
+
+        g.select(".domain").remove();
+      });
 
     svg
       .append("g")
       .selectAll("g")
       .data(sortedCandles)
       .join("g")
-      .attr("transform", (d) => `translate(${x(d.date.toISOString())},0)`)
+      .attr("transform", (d) => `translate(${x(d.date)},0)`)
       .each(function (d) {
         const g = d3.select(this);
-        const color = d.close > d.open ? "#4caf50" : "#f44336";
-
+        const isUp = d.close > d.open;
+        const color = isUp ? "#ff6b6b" : "#5dafff";
         const openY = y(d.open);
         const closeY = y(d.close);
 
         g.append("line")
-          .attr("x1", candleWidth / 2)
-          .attr("x2", candleWidth / 2)
+          .attr("x1", 0)
+          .attr("x2", 0)
           .attr("y1", y(d.high))
           .attr("y2", y(d.low))
           .attr("stroke", color)
           .attr("stroke-width", 1);
 
         g.append("rect")
-          .attr("x", 0)
+          .attr("x", -candleWidth / 2)
           .attr("width", candleWidth)
           .attr("y", Math.min(openY, closeY))
           .attr("height", Math.max(1, Math.abs(closeY - openY)))
@@ -102,13 +132,19 @@ const CandleCanvas = ({ candles, candleType }: Props) => {
   }, [candles, candleType]);
 
   return (
-    <svg
-      ref={ref}
-      width="100%"
-      height="600px"
-      viewBox="0 0 800 600"
-      style={{ border: "1px solid #ccc", background: "#fff" }}
-    />
+    <div style={{ width: "100%", height: "100%" }}>
+      <svg
+        ref={ref}
+        preserveAspectRatio="none"
+        style={{
+          width: "100%",
+          height: "100%",
+          display: "block",
+          border: "1px solid #444",
+          background: "#0e1621",
+        }}
+      />
+    </div>
   );
 };
 

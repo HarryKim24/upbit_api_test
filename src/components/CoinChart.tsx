@@ -114,10 +114,27 @@ const CoinChart = ({
   const visible = candles;
 
   return (
-    <section style={{ height: "800px", padding: "1rem", border: "1px solid #ddd", borderRadius: "6px" }}>
+    <section
+      style={{
+        height: "100%",
+        minHeight: "400px",
+        padding: "1rem",
+        border: "1px solid #ddd",
+        borderRadius: "6px",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
       <h2 style={{ fontSize: "1rem", marginBottom: "0.5rem" }}>차트</h2>
-      <CandleControls selectedType={selectedType} unit={unit} onTypeChange={setSelectedType} onUnitChange={setUnit} />
-      <CandleCanvas candles={visible} candleType={selectedType} />
+      <CandleControls
+        selectedType={selectedType}
+        unit={unit}
+        onTypeChange={setSelectedType}
+        onUnitChange={setUnit}
+      />
+      <div style={{ flex: 1, minHeight: 0 }}>
+        <CandleCanvas candles={visible} candleType={selectedType} />
+      </div>
     </section>
   );
 };
