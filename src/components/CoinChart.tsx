@@ -1,5 +1,4 @@
-// components/CoinChart.tsx
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import type { CandleType, NormalizedCandle } from "../types/upbitCandle";
 import { fetchNormalizedCandles } from "../servides/candleService";
 import { useTradeTicker } from "../hooks/useTradeTicker";
@@ -23,6 +22,12 @@ const CoinChart = ({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // ✅ 항상 최신 candles 유지
+  const latestCandlesRef = useRef<NormalizedCandle[]>([]);
+  useEffect(() => {
+    latestCandlesRef.current = candles;
+  }, [candles]);
+
   useEffect(() => {
     const load = async () => {
       setLoading(true);
@@ -35,7 +40,7 @@ const CoinChart = ({
         });
         setCandles(data);
       } catch (err) {
-        console.error(err)
+        console.error(err);
         setError("❌ 데이터 로딩 오류");
       } finally {
         setLoading(false);
@@ -47,11 +52,16 @@ const CoinChart = ({
 
   const handleTrade = useCallback(
     ({ price, volume, timestamp }: { price: number; volume: number; timestamp: number }) => {
-      setCandles((prev) => {
+      setCandles(() => {
+        const prev = latestCandlesRef.current;
         if (!prev.length) return prev;
+
         const last = prev[prev.length - 1];
         const tradeTime = timestamp;
         const lastTime = last.date.getTime();
+
+        // ✅ 과거 트레이드 무시
+        if (tradeTime < lastTime) return prev;
 
         const isNew = (() => {
           const t = new Date(tradeTime), l = new Date(lastTime);
@@ -71,9 +81,17 @@ const CoinChart = ({
         })();
 
         if (isNew) {
-          return [...prev.slice(-99), {
-            date: new Date(tradeTime), open: price, high: price, low: price, close: price, volume,
-          }];
+          return [
+            ...prev.slice(-99),
+            {
+              date: new Date(tradeTime),
+              open: price,
+              high: price,
+              low: price,
+              close: price,
+              volume,
+            },
+          ];
         }
 
         const updated = {
@@ -95,13 +113,13 @@ const CoinChart = ({
   if (loading) return <div>📊 로딩 중...</div>;
   if (error) return <div>{error}</div>;
 
-  const visible = candles.slice(-200);
+  const visible = candles;
 
   return (
     <section style={{ height: "800px", padding: "1rem", border: "1px solid #ddd", borderRadius: "6px" }}>
       <h2 style={{ fontSize: "1rem", marginBottom: "0.5rem" }}>차트</h2>
       <CandleControls selectedType={selectedType} unit={unit} onTypeChange={setSelectedType} onUnitChange={setUnit} />
-      <CandleCanvas candles={visible} />
+      <CandleCanvas candles={visible} candleType={selectedType} />
     </section>
   );
 };

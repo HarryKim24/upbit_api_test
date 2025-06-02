@@ -15,6 +15,14 @@ const normalizeCandles = (candles: upbitCandle[]): NormalizedCandle[] => {
 export const fetchNormalizedCandles = async (
   options: GetCandlesOptions
 ): Promise<NormalizedCandle[]> => {
-  const rawCandles = await getUpbitCandles(options);
-  return normalizeCandles(rawCandles);
+  const now = new Date();
+  const paddedTo = new Date(now.getTime() + 2 * 60 * 1000).toISOString(); // ✅ 미래 2분 추가
+  const { to = paddedTo, ...rest } = options;
+
+  const rawCandles = await getUpbitCandles({ ...rest, to });
+
+  // ✅ 정렬 보장
+  const normalized = normalizeCandles(rawCandles).sort((a, b) => a.date.getTime() - b.date.getTime());
+
+  return normalized;
 };
