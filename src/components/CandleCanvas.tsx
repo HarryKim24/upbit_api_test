@@ -42,9 +42,7 @@ const CandleCanvas = ({ candles, candleType, loading }: Props) => {
     const dates = sortedCandles.map((d) => d.date);
     const firstDate = dates[0] || new Date(Date.now() - 3600_000);
     const lastDate = dates[dates.length - 1] || new Date();
-
-    const timeGap =
-      dates.length > 1 ? dates[1].getTime() - dates[0].getTime() : 60_000;
+    const timeGap = dates.length > 1 ? dates[1].getTime() - dates[0].getTime() : 60_000;
 
     const x = d3
       .scaleTime()
@@ -53,6 +51,8 @@ const CandleCanvas = ({ candles, candleType, loading }: Props) => {
         new Date(lastDate.getTime() + timeGap * 0.5),
       ])
       .range([margin.left, width - margin.right]);
+
+    const xOriginal = x.copy();
 
     const y = d3
       .scaleLinear()
@@ -63,14 +63,17 @@ const CandleCanvas = ({ candles, candleType, loading }: Props) => {
       .nice()
       .range([height - margin.bottom, margin.top]);
 
-    svg
+    const xAxis = svg
       .append("g")
+      .attr("class", "x-axis")
       .attr("transform", `translate(0,${height - margin.bottom})`)
       .call(
         d3.axisBottom(x)
           .ticks(10)
           .tickFormat((d) => timeFormatter(d instanceof Date ? d : new Date(+d)))
-      )
+      );
+
+    xAxis
       .selectAll("text")
       .attr("transform", "rotate(-40)")
       .style("text-anchor", "end")
@@ -91,14 +94,15 @@ const CandleCanvas = ({ candles, candleType, loading }: Props) => {
         g.select(".domain").remove();
       });
 
-    if (!loading && sortedCandles.length > 0) {
+    const renderCandles = () => {
+      svg.selectAll(".candles").remove();
+
       const candleWidth =
-        dates.length > 1
-          ? Math.max(3, (x(dates[1])! - x(dates[0])!) * 0.7)
-          : 5;
+        dates.length > 1 ? Math.max(3, (x(dates[1]) - x(dates[0])) * 0.7) : 5;
 
       svg
         .append("g")
+        .attr("class", "candles")
         .selectAll("g")
         .data(sortedCandles)
         .join("g")
@@ -125,7 +129,37 @@ const CandleCanvas = ({ candles, candleType, loading }: Props) => {
             .attr("height", Math.max(1, Math.abs(closeY - openY)))
             .attr("fill", color);
         });
+    };
+
+    if (!loading && sortedCandles.length > 0) {
+      renderCandles();
     }
+
+    const zoomed = (event: d3.D3ZoomEvent<SVGSVGElement, unknown>) => {
+      const newX = event.transform.rescaleX(xOriginal);
+      x.domain(newX.domain());
+
+      xAxis
+        .call(
+          d3.axisBottom(x)
+            .ticks(10)
+            .tickFormat((d) => timeFormatter(d instanceof Date ? d : new Date(+d)))
+        )
+        .selectAll("text")
+        .attr("transform", "rotate(-40)")
+        .style("text-anchor", "end")
+        .style("fill", "#ccc");
+
+      renderCandles();
+    };
+
+    const zoom = d3.zoom<SVGSVGElement, unknown>()
+      .scaleExtent([0.5, 20])
+      .translateExtent([[0, 0], [width, height]])
+      .extent([[0, 0], [width, height]])
+      .on("zoom", zoomed);
+
+    svg.call(zoom);
   }, [candles, candleType, loading]);
 
   return (
